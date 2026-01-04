@@ -67,7 +67,7 @@
         display: flex; align-items: center; justify-content: center;
         transition: opacity 0.8s;
     }
-    #intro-modal { z-index: 90; } /* Behind splash, in front of main */
+    #intro-modal { z-index: 90; } 
     
     .fade-out { opacity: 0; pointer-events: none; }
     .hidden { display: none !important; }
@@ -89,21 +89,16 @@
 
   <div id="splash-screen">
       <div class="text-center w-full max-w-lg mx-4">
-          
           <div class="text-yellow-500 text-xs md:text-sm tracking-[0.3em] font-bold uppercase mb-4 animate-pulse">
               OFFICIAL SELECTION PROTOCOL
           </div>
-          
           <h1 class="text-5xl md:text-7xl font-bold text-white number-font tracking-tight mb-6 drop-shadow-2xl">
               FairDraw System
           </h1>
-          
           <div class="h-px w-24 bg-yellow-500/50 mx-auto mb-8"></div>
-          
           <p class="text-gray-400 text-xs tracking-[0.2em] uppercase mb-10">
               SELECT YOUR COLOUR
           </p>
-          
           <button onclick="goToBriefing()" class="bg-yellow-700/20 hover:bg-yellow-600/30 text-yellow-500 font-bold py-4 px-12 rounded-full tracking-widest uppercase text-xs transition-all border border-yellow-500 hover:scale-105 hover:shadow-[0_0_20px_rgba(234,179,8,0.3)]">
               INITIALIZE
           </button>
@@ -119,7 +114,9 @@
           <ul class="text-left text-sm text-gray-400 space-y-3 mb-8 font-mono">
               <li><span class="text-yellow-500 mr-2">01.</span> Identify your assigned <strong>COLOR</strong>.</li>
               <li><span class="text-yellow-500 mr-2">02.</span> Do not access another operative's card.</li>
-              <li><span class="text-yellow-500 mr-2">03.</span> Range: <strong>3 - 10</strong>.</li>
+              <li><span class="text-yellow-500 mr-2">03.</span> System allocation is <strong>Random & Final</strong>.</li>
+              <li><span class="text-yellow-500 mr-2">04.</span> Wait for authentication flash.</li>
+              <li><span class="text-yellow-500 mr-2">05.</span> <strong>Screenshot</strong> your position immediately.</li>
           </ul>
           
           <button onclick="enterSystem()" class="w-full bg-yellow-700 hover:bg-yellow-600 text-white font-bold py-3 rounded tracking-widest uppercase text-xs transition-all border border-yellow-500">
@@ -152,7 +149,7 @@
           </div>
 
           <div class="mt-6 flex justify-between items-center border-t border-gray-800 pt-4">
-              <div class="text-xs text-gray-500">System v6.6</div>
+              <div class="text-xs text-gray-500">System v6.7</div>
               <button onclick="resetSystem()" class="bg-red-900/50 hover:bg-red-700 text-red-200 text-xs font-bold py-2 px-4 rounded border border-red-800 transition-all">
                   <i class="fas fa-trash-alt mr-2"></i> RESET SYSTEM
               </button>
