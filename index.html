@@ -18,9 +18,8 @@
 
   <style>
     body { font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
-    .roman-font { font-family: 'Cinzel', serif; }
+    .roman-font { font-family: 'Cinzel', serif; } /* For the SLOT label */
 
-    /* Glassmorphism Effect */
     .glass-card {
       background: rgba(20, 20, 20, 0.85);
       backdrop-filter: blur(20px);
@@ -29,12 +28,9 @@
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
     }
     
-    /* Mobile Optimization */
     button, .glass-card { touch-action: manipulation; }
-
     .signature-glow { text-shadow: 0 0 10px rgba(212, 175, 55, 0.5); }
     
-    /* Animations */
     .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
     @keyframes shake {
       10%, 90% { transform: translate3d(-1px, 0, 0); }
@@ -43,7 +39,6 @@
       40%, 60% { transform: translate3d(4px, 0, 0); }
     }
 
-    /* Toast Notification */
     #toast-container {
         transition: transform 0.3s ease-in-out, opacity 0.3s;
         transform: translateY(-150%);
@@ -110,7 +105,7 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
     import { getDatabase, ref, onValue, runTransaction, set } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-database.js";
 
-    // 1. CONFIGURATION
+    // ✅ YOUR NEW CONFIG
     const firebaseConfig = {
       apiKey: "AIzaSyDmOpuBfVzQf1K3uIUVnwU6BH1GNeHWI28",
       authDomain: "autostine-fairdraw-26-8903e.firebaseapp.com",
@@ -125,7 +120,7 @@
     const db = getDatabase(app);
     const dbRef = ref(db, 'slots');
 
-    // 2. HELPER FUNCTIONS
+    // Helper: Roman Numerals
     const toRoman = (num) => ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X"][num] || num;
 
     const playClick = () => {
@@ -155,28 +150,24 @@
         setTimeout(() => toast.classList.remove('show'), 3000);
     }
 
-    // 3. MAIN DATABASE LISTENER
+    // LISTENER
     onValue(dbRef, (snapshot) => {
         const data = snapshot.val();
         
-        // Update Status Badge
         const badge = document.getElementById('status-badge');
         badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-green-500 animate-pulse mr-2"></span> System Online`;
         badge.className = "inline-flex items-center px-3 py-1 rounded-full border border-green-500/30 bg-green-500/10 text-green-400 text-xs tracking-widest uppercase mb-4";
 
         if (!data) {
-            // DATABASE IS EMPTY -> SHOW REPAIR BUTTON
             document.getElementById('cards-grid').innerHTML = ''; 
             document.getElementById('repair-box').classList.remove('hidden');
-            forceRepair(true); // Attempt silent auto-repair
+            forceRepair(true);
         } else {
-            // DATABASE IS GOOD -> RENDER GRID
             document.getElementById('repair-box').classList.add('hidden');
             render(data);
         }
     });
 
-    // 4. REPAIR LOGIC
     window.forceRepair = (silent = false) => {
         const initialData = {};
         for(let i=1; i<=10; i++) initialData[`slot${i}`] = { val: 0 };
@@ -190,7 +181,6 @@
             });
     };
 
-    // 5. RENDER LOGIC
     function render(data) {
         const grid = document.getElementById('cards-grid');
         grid.innerHTML = ''; 
@@ -204,8 +194,11 @@
             
             let css = "glass-card rounded-xl h-40 flex flex-col items-center justify-center relative transition-all duration-300 ";
             
+            // Generate Roman Numeral for SLOT NAME (e.g., SLOT IV)
+            const romanSlotName = toRoman(i);
+
             if(isTaken) {
-                // REVEALED CARD
+                // REVEALED
                 const isMySlot = myPick === key;
                 if(isMySlot) css += "border-green-500 bg-green-900/20 scale-105 shadow-2xl shadow-green-900/50";
                 else css += "border-yellow-500/50 bg-yellow-900/20";
@@ -214,11 +207,11 @@
                     <div class="text-[10px] ${isMySlot ? 'text-green-400' : 'text-yellow-500'} font-bold tracking-widest uppercase mb-1">
                         ${isMySlot ? 'YOUR PICK' : 'Position'}
                     </div>
-                    <div class="text-5xl font-bold text-white drop-shadow-lg roman-font">${toRoman(slot.val)}</div>
-                    <div class="absolute bottom-2 text-[10px] text-gray-500">SLOT ${String(i).padStart(2,'0')}</div>
+                    <div class="text-5xl font-bold text-white drop-shadow-lg">${slot.val}</div>
+                    <div class="absolute bottom-2 text-[10px] text-gray-500 roman-font">SLOT ${romanSlotName}</div>
                 `;
             } else {
-                // LOCKED CARD
+                // LOCKED
                 css += "cursor-pointer hover:bg-white/5 active:scale-95";
                 if(myPick) css += " opacity-50 cursor-not-allowed";
 
@@ -235,8 +228,8 @@
 
                 el.innerHTML = `
                     <div class="text-3xl text-gray-600 mb-2 transition-colors group-hover:text-white"><i class="fas fa-lock"></i></div>
-                    <div class="text-lg text-gray-400 font-medium">SLOT ${String(i).padStart(2,'0')}</div>
-                    <div class="text-[10px] text-gray-600 mt-1 uppercase tracking-wider">Tap to Unlock</div>
+                    <div class="text-lg text-gray-400 font-medium roman-font">SLOT ${romanSlotName}</div>
+                    <div class="text-[10px] text-gray-600 mt-1 uppercase tracking-wider font-sans">Tap to Unlock</div>
                 `;
             }
             el.className = css;
@@ -245,7 +238,6 @@
         });
     }
 
-    // 6. DRAW TRANSACTION
     function draw(key) {
         runTransaction(dbRef, (data) => {
             if(!data) return;
@@ -257,15 +249,14 @@
             return data;
         }).then(() => {
              localStorage.setItem('fairdraw_receipt', key);
-             showToast(`Success! You got Number ${toRoman(data[key].val)}`, "success");
+             showToast(`Success! You got Number ${data[key].val}`, "success");
              confetti({ particleCount: 150, spread: 100, origin: { y: 0.6 }, colors: ['#FFD700', '#FFFFFF'] });
         });
     }
 
-    // 7. ADMIN RESET (Password: autostine123)
     window.adminReset = () => {
         const pass = prompt("🔐 Enter Admin Password:");
-        if(pass === "autostine123") { // <-- CHANGE THIS PASSWORD FOR SECURITY
+        if(pass === "admin123") {
             if(confirm("⚠️ Clear board? This cannot be undone.")) {
                 set(dbRef, null);
                 localStorage.removeItem('fairdraw_receipt');
