@@ -22,7 +22,7 @@
 
     /* GLASSMOPHISM */
     .glass-card {
-      background: rgba(20, 20, 20, 0.9);
+      background: rgba(20, 20, 20, 0.95);
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
       border: 1px solid rgba(255, 255, 255, 0.08);
@@ -41,18 +41,14 @@
 
     .signature-glow { text-shadow: 0 0 10px rgba(212, 175, 55, 0.5); }
     
-    /* NEW ANIMATIONS: THE FLASH REVEAL */
-    .flash-enter {
-        animation: flash-pop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-    }
-    
+    /* ANIMATIONS */
+    .flash-enter { animation: flash-pop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
     @keyframes flash-pop {
         0% { opacity: 0; transform: scale(0.5); filter: brightness(3); }
         50% { opacity: 1; transform: scale(1.1); filter: brightness(2); }
         100% { opacity: 1; transform: scale(1); filter: brightness(1); }
     }
 
-    /* PULSING SCANNER */
     .scanning-active {
         animation: scan-pulse 0.8s infinite;
         border-color: rgba(255,255,255,0.8);
@@ -65,12 +61,14 @@
     }
     
     /* MODALS */
-    #intro-modal, #admin-modal {
+    #splash-screen, #intro-modal, #admin-modal {
         position: fixed; inset: 0; z-index: 100;
         background: black;
         display: flex; align-items: center; justify-content: center;
-        transition: opacity 0.5s;
+        transition: opacity 0.8s;
     }
+    #intro-modal { z-index: 90; } /* Behind splash, in front of main */
+    
     .fade-out { opacity: 0; pointer-events: none; }
     .hidden { display: none !important; }
 
@@ -89,8 +87,31 @@
     <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-gray-900 to-black"></div>
   </div>
 
-  <div id="intro-modal">
-      <div class="glass-card p-8 rounded-2xl max-w-md mx-4 text-center border border-yellow-900/50">
+  <div id="splash-screen">
+      <div class="text-center w-full max-w-lg mx-4">
+          
+          <div class="text-yellow-500 text-xs md:text-sm tracking-[0.3em] font-bold uppercase mb-4 animate-pulse">
+              OFFICIAL SELECTION PROTOCOL
+          </div>
+          
+          <h1 class="text-5xl md:text-7xl font-bold text-white number-font tracking-tight mb-6 drop-shadow-2xl">
+              FairDraw System
+          </h1>
+          
+          <div class="h-px w-24 bg-yellow-500/50 mx-auto mb-8"></div>
+          
+          <p class="text-gray-400 text-xs tracking-[0.2em] uppercase mb-10">
+              SELECT YOUR COLOUR
+          </p>
+          
+          <button onclick="goToBriefing()" class="bg-yellow-700/20 hover:bg-yellow-600/30 text-yellow-500 font-bold py-4 px-12 rounded-full tracking-widest uppercase text-xs transition-all border border-yellow-500 hover:scale-105 hover:shadow-[0_0_20px_rgba(234,179,8,0.3)]">
+              INITIALIZE
+          </button>
+      </div>
+  </div>
+
+  <div id="intro-modal" class="hidden">
+      <div class="glass-card p-8 rounded-2xl max-w-md mx-4 text-center border border-yellow-900/50 transform transition-all duration-500 scale-95 opacity-0" id="briefing-card">
           <div class="text-yellow-500 text-3xl mb-4"><i class="fas fa-shield-alt"></i></div>
           <h2 class="text-2xl font-bold mb-2 number-font text-white tracking-wide">PROTOCOL BRIEFING</h2>
           <div class="h-px w-20 bg-yellow-500 mx-auto mb-6"></div>
@@ -130,7 +151,7 @@
           </div>
 
           <div class="mt-6 flex justify-between items-center border-t border-gray-800 pt-4">
-              <div class="text-xs text-gray-500">System v6.2</div>
+              <div class="text-xs text-gray-500">System v6.5</div>
               <button onclick="resetSystem()" class="bg-red-900/50 hover:bg-red-700 text-red-200 text-xs font-bold py-2 px-4 rounded border border-red-800 transition-all">
                   <i class="fas fa-trash-alt mr-2"></i> RESET SYSTEM
               </button>
@@ -151,13 +172,10 @@
         <span id="live-counter">Connecting...</span>
       </div>
       
-      <h2 class="text-sm md:text-base text-yellow-500 font-bold tracking-[0.2em] uppercase mb-2">
-          OFFICIAL SELECTION PROTOCOL
-      </h2>
-      <h1 class="text-4xl md:text-5xl font-bold text-white number-font tracking-wide mb-2 drop-shadow-lg">
-          FairDraw System
+      <h1 class="text-3xl font-bold text-white number-font tracking-wide mb-2 opacity-80">
+          FairDraw<span class="text-yellow-500">.</span>
       </h1>
-      <p class="text-gray-500 text-[10px] tracking-widest uppercase">SELECT YOUR COLOUR</p>
+      <p class="text-gray-500 text-[10px] tracking-widest uppercase">System Online</p>
     </div>
 
     <div id="cards-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4 pb-4">
@@ -198,31 +216,46 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const dbRef = ref(db, 'system_colors_v6'); // Keeps v6 Logic
+    const dbRef = ref(db, 'system_colors_v6'); 
 
     let activeScanCard = null;
     const COLORS = ["RED", "BLUE", "GREEN", "YELLOW", "PURPLE", "ORANGE", "BLACK", "WHITE"];
 
+    // 1. TRANSITION: Splash -> Briefing
+    window.goToBriefing = () => {
+        const splash = document.getElementById('splash-screen');
+        const briefing = document.getElementById('intro-modal');
+        const card = document.getElementById('briefing-card');
+        
+        splash.classList.add('fade-out');
+        setTimeout(() => splash.style.display = 'none', 800);
+        
+        // Reveal Briefing
+        briefing.classList.remove('hidden');
+        setTimeout(() => {
+            card.classList.remove('scale-95', 'opacity-0');
+            card.classList.add('scale-100', 'opacity-100');
+        }, 100);
+    }
+
+    // 2. TRANSITION: Briefing -> Grid
     window.enterSystem = () => {
-        const modal = document.getElementById('intro-modal');
-        modal.classList.add('fade-out');
-        setTimeout(() => modal.style.display = 'none', 500);
+        const briefing = document.getElementById('intro-modal');
+        briefing.classList.add('fade-out');
+        setTimeout(() => briefing.style.display = 'none', 800);
     }
 
     onValue(dbRef, (snapshot) => {
         const data = snapshot.val();
-        
         if(data) {
             const taken = Object.values(data).filter(c => c.val !== 0).length;
             const counter = document.getElementById('live-counter');
             counter.innerText = `${taken} / 8 SEATS FILLED`;
-            
             if(taken === 8) {
                 counter.className = "text-red-400 font-bold tracking-widest";
                 document.getElementById('status-badge').className = "inline-flex items-center px-3 py-1 rounded-full border border-red-700 bg-red-900/50 text-red-400 text-xs tracking-widest uppercase mb-4";
             }
         }
-
         if (!data) {
             document.getElementById('cards-grid').innerHTML = ''; 
             document.getElementById('repair-box').classList.remove('hidden');
@@ -313,11 +346,8 @@
         `;
     }
 
-    // --- LOGIC: THE FAST REVEAL ---
     async function startRevealSequence(colorKey) {
         activeScanCard = colorKey;
-        
-        // Force visual update (Show "Authenticating...")
         const gridSnapshot = await get(dbRef);
         render(gridSnapshot.val());
 
