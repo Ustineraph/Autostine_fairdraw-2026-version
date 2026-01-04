@@ -12,22 +12,24 @@
   
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;500;700&family=Oswald:wght@700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <style>
     body { font-family: 'Outfit', sans-serif; -webkit-tap-highlight-color: transparent; }
-    .number-font { font-family: 'Oswald', sans-serif; } /* BLOCK NUMBERS */
+    .number-font { font-family: 'Oswald', sans-serif; }
 
+    /* GLASSMOPHISM */
     .glass-card {
-      background: rgba(20, 20, 20, 0.85);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
+      background: rgba(20, 20, 20, 0.9);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
       border: 1px solid rgba(255, 255, 255, 0.08);
       box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
     }
-    
-    /* COLORS */
+
+    /* THE 8 COLORS */
     .bg-RED { background: linear-gradient(135deg, #8b0000 0%, #ff0000 100%); border-color: #ff4d4d; }
     .bg-BLUE { background: linear-gradient(135deg, #00008b 0%, #0000ff 100%); border-color: #4d4dff; }
     .bg-GREEN { background: linear-gradient(135deg, #006400 0%, #00ff00 100%); border-color: #4dff4d; }
@@ -39,11 +41,10 @@
 
     .signature-glow { text-shadow: 0 0 10px rgba(212, 175, 55, 0.5); }
     
-    /* AGGRESSIVE SPIN ANIMATION */
+    /* ANIMATIONS */
     .spinning-active {
-        animation: pulse-border 0.2s infinite; /* Super fast pulse */
-        z-index: 50;
-        transform: scale(1.05);
+        animation: pulse-border 0.2s infinite; 
+        z-index: 50; transform: scale(1.05);
     }
     @keyframes pulse-border {
         0% { border-color: white; box-shadow: 0 0 20px rgba(255,255,255,0.5); }
@@ -51,14 +52,17 @@
         100% { border-color: white; box-shadow: 0 0 20px rgba(255,255,255,0.5); }
     }
     
-    #intro-modal {
+    /* MODALS */
+    #intro-modal, #admin-modal {
         position: fixed; inset: 0; z-index: 100;
         background: black;
         display: flex; align-items: center; justify-content: center;
         transition: opacity 0.5s;
     }
     .fade-out { opacity: 0; pointer-events: none; }
+    .hidden { display: none !important; }
 
+    /* TOAST */
     #toast-container {
         transition: transform 0.3s ease-in-out, opacity 0.3s;
         transform: translateY(-150%);
@@ -67,7 +71,7 @@
     #toast-container.show { transform: translateY(0); opacity: 1; }
   </style>
 </head>
-<body class="bg-black text-white min-h-screen flex flex-col items-center justify-center p-4">
+<body class="bg-black text-white min-h-screen flex flex-col items-center p-4">
 
   <div class="fixed inset-0 z-0 pointer-events-none">
     <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-gray-900 to-black"></div>
@@ -78,17 +82,47 @@
           <div class="text-yellow-500 text-3xl mb-4"><i class="fas fa-shield-alt"></i></div>
           <h2 class="text-2xl font-bold mb-2 number-font text-white tracking-wide">PROTOCOL BRIEFING</h2>
           <div class="h-px w-20 bg-yellow-500 mx-auto mb-6"></div>
-          
           <ul class="text-left text-sm text-gray-400 space-y-3 mb-8 font-mono">
               <li><span class="text-yellow-500 mr-2">01.</span> Identify your assigned <strong>COLOR</strong>.</li>
               <li><span class="text-yellow-500 mr-2">02.</span> Do not access another operative's card.</li>
               <li><span class="text-yellow-500 mr-2">03.</span> Positions <strong>1 & 2</strong> are locked.</li>
-              <li><span class="text-yellow-500 mr-2">04.</span> Allocation Range: <strong>3 - 10</strong>.</li>
+              <li><span class="text-yellow-500 mr-2">04.</span> Range: <strong>3 - 10</strong>.</li>
           </ul>
-          
           <button onclick="enterSystem()" class="w-full bg-yellow-700 hover:bg-yellow-600 text-white font-bold py-3 rounded tracking-widest uppercase text-xs transition-all border border-yellow-500">
               I Understand - Proceed
           </button>
+      </div>
+  </div>
+
+  <div id="admin-modal" class="hidden">
+      <div class="glass-card p-6 rounded-2xl w-full max-w-lg mx-4 border border-gray-700 relative">
+          <button onclick="closeAdmin()" class="absolute top-4 right-4 text-gray-500 hover:text-white">
+              <i class="fas fa-times"></i>
+          </button>
+
+          <h2 class="text-xl font-bold mb-1 number-font text-white tracking-wide">COMMAND CENTER</h2>
+          <p class="text-[10px] text-gray-500 uppercase tracking-widest mb-6">Live Allocation Status</p>
+
+          <div class="overflow-hidden rounded-lg border border-gray-700">
+              <table class="w-full text-sm text-left text-gray-400">
+                  <thead class="text-xs text-gray-200 uppercase bg-gray-800">
+                      <tr>
+                          <th scope="col" class="px-4 py-3">Color Code</th>
+                          <th scope="col" class="px-4 py-3 text-center">Status</th>
+                          <th scope="col" class="px-4 py-3 text-right">Position</th>
+                      </tr>
+                  </thead>
+                  <tbody id="admin-table-body">
+                      </tbody>
+              </table>
+          </div>
+
+          <div class="mt-6 flex justify-between items-center border-t border-gray-800 pt-4">
+              <div class="text-xs text-gray-500">System v5.1</div>
+              <button onclick="resetSystem()" class="bg-red-900/50 hover:bg-red-700 text-red-200 text-xs font-bold py-2 px-4 rounded border border-red-800 transition-all">
+                  <i class="fas fa-trash-alt mr-2"></i> RESET SYSTEM
+              </button>
+          </div>
       </div>
   </div>
 
@@ -97,19 +131,21 @@
       <span id="toast-msg">Notification</span>
   </div>
 
-  <div class="relative z-10 w-full max-w-5xl text-center">
+  <div class="relative z-10 w-full max-w-5xl text-center flex-grow flex flex-col justify-center">
     
-    <div class="mb-8">
+    <div class="mb-8 mt-4">
       <div id="status-badge" class="inline-flex items-center px-3 py-1 rounded-full border border-gray-700 bg-gray-800/50 text-gray-400 text-xs tracking-widest uppercase mb-4 transition-all duration-500">
-        <span class="w-2 h-2 rounded-full bg-gray-500 mr-2"></span> System Online
+        <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse mr-2"></span> 
+        <span id="live-counter">Connecting...</span>
       </div>
+      
       <h1 class="text-5xl font-bold tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200 to-gray-500">
         FairDraw<span class="text-yellow-500">.</span>
       </h1>
       <p class="text-gray-500 font-light mt-2 text-xs tracking-widest uppercase">Select Your Code</p>
     </div>
 
-    <div id="cards-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+    <div id="cards-grid" class="grid grid-cols-2 md:grid-cols-4 gap-4 pb-4">
        </div>
     
     <div id="repair-box" class="hidden mt-8">
@@ -120,16 +156,17 @@
     
   </div>
 
-  <footer class="absolute bottom-4 text-center w-full z-10 select-none">
+  <footer class="w-full text-center mt-auto py-6 z-10 select-none">
     <p class="text-gray-600 text-[10px] flex items-center justify-center gap-2">
       Engineered by <span class="text-yellow-600 font-bold signature-glow">Autostine</span>
-      <span class="text-gray-700">| v4.0</span> <button onclick="adminMenu()" class="text-gray-800 hover:text-white transition-colors p-2">
+      <button onclick="openAdmin()" class="text-gray-800 hover:text-white transition-colors p-2">
           <i class="fas fa-lock text-[8px]"></i>
       </button>
     </p>
   </footer>
 
   <audio id="click-sound" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=click-button-140881.mp3"></audio>
+  <audio id="tick-sound" src="https://cdn.pixabay.com/download/audio/2022/03/24/audio_731478204b.mp3?filename=ui-click-43196.mp3"></audio>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
@@ -147,11 +184,9 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const dbRef = ref(db, 'system_colors_v4'); // V4 Database (Clean Start)
+    const dbRef = ref(db, 'system_colors_v5'); 
 
-    // Tracks which card is spinning locally
     let activeSpinCard = null;
-
     const COLORS = ["RED", "BLUE", "GREEN", "YELLOW", "PURPLE", "ORANGE", "BLACK", "WHITE"];
 
     window.enterSystem = () => {
@@ -162,6 +197,18 @@
 
     onValue(dbRef, (snapshot) => {
         const data = snapshot.val();
+        
+        if(data) {
+            const taken = Object.values(data).filter(c => c.val !== 0).length;
+            const counter = document.getElementById('live-counter');
+            counter.innerText = `${taken} / 8 SEATS FILLED`;
+            
+            if(taken === 8) {
+                counter.className = "text-red-400 font-bold tracking-widest";
+                document.getElementById('status-badge').className = "inline-flex items-center px-3 py-1 rounded-full border border-red-700 bg-red-900/50 text-red-400 text-xs tracking-widest uppercase mb-4";
+            }
+        }
+
         if (!data) {
             document.getElementById('cards-grid').innerHTML = ''; 
             document.getElementById('repair-box').classList.remove('hidden');
@@ -169,6 +216,9 @@
         } else {
             document.getElementById('repair-box').classList.add('hidden');
             render(data);
+            if(!document.getElementById('admin-modal').classList.contains('hidden')) {
+                updateAdminTable(data);
+            }
         }
     });
 
@@ -178,45 +228,40 @@
             initialData[color] = { val: 0 };
         });
         set(dbRef, initialData).then(() => {
-            if(!silent) showToast("Colors Initialized", "success");
+            if(!silent) showToast("System Initialized", "success");
         });
     };
 
     function render(data) {
         const grid = document.getElementById('cards-grid');
         grid.innerHTML = ''; 
-        const myPick = localStorage.getItem('fairdraw_color_receipt_v4');
+        const myPick = localStorage.getItem('fairdraw_receipt_v5');
 
         COLORS.forEach(color => {
             const slot = data[color];
             const isTaken = slot.val !== 0;
             const el = document.createElement('div');
             
-            // IF SPINNING LOCALLY, IGNORE DB VALUE FOR NOW
             if (activeSpinCard === color) {
                 renderSpinningCard(el, color);
-            } 
-            else if (isTaken) {
+            } else if (isTaken) {
                 renderRevealedCard(el, color, slot.val, myPick);
-            } 
-            else {
+            } else {
                 renderLockedCard(el, color, myPick);
             }
             grid.appendChild(el);
         });
     }
 
-    // --- RENDER HELPERS ---
-    
     function renderLockedCard(el, color, myPick) {
         let css = `glass-card rounded-xl h-48 flex flex-col items-center justify-center relative transition-all duration-300 group overflow-hidden border-t-2 bg-${color} cursor-pointer hover:scale-105 active:scale-95`;
         if(myPick) css += " opacity-20 cursor-not-allowed grayscale";
 
         el.className = css;
         el.onclick = () => {
-            document.getElementById('click-sound').play().catch(()=>{});
             if(activeSpinCard) return; 
             if(myPick) return showToast("You have already received your allocation.", "error");
+            document.getElementById('click-sound').play().catch(()=>{});
             startSpinSequence(color);
         }; 
 
@@ -254,84 +299,97 @@
         `;
     }
 
-    // --- GAME LOGIC ---
     async function startSpinSequence(colorKey) {
         activeSpinCard = colorKey;
-        
-        // Force Immediate Visual Update
+        const tick = document.getElementById('tick-sound');
+        tick.volume = 0.3;
+
         const gridSnapshot = await get(dbRef);
         render(gridSnapshot.val());
 
-        // Start The "Random Number Cycle" Visual
         const spinInterval = setInterval(() => {
-            const random = Math.floor(Math.random() * 8) + 3; // 3-10
+            const random = Math.floor(Math.random() * 8) + 3; 
             const numEl = document.getElementById(`spin-num-${colorKey}`);
-            if(numEl) numEl.innerText = random;
-        }, 50); // Super fast 50ms cycle
+            if(numEl) {
+                numEl.innerText = random;
+                tick.cloneNode(true).play().catch(()=>{});
+            }
+        }, 80); 
 
-        // Run Logic (Secretly)
         let success = false;
         try {
             await runTransaction(dbRef, (data) => {
                 if(!data) return;
                 if(data[colorKey].val !== 0) return;
-
                 const used = Object.values(data).map(s => s.val);
                 const avail = [3,4,5,6,7,8,9,10].filter(n => !used.includes(n));
-                
                 if(!avail.length) return; 
-
-                const picked = avail[Math.floor(Math.random() * avail.length)];
-                data[colorKey].val = picked;
+                data[colorKey].val = avail[Math.floor(Math.random() * avail.length)];
                 return data;
             });
             success = true;
         } catch (e) { console.error(e); }
 
-        // MANDATORY 3 SECOND WAIT (Suspense)
         setTimeout(async () => {
             clearInterval(spinInterval);
             activeSpinCard = null; 
-            
             if(success) {
-                localStorage.setItem('fairdraw_color_receipt_v4', colorKey);
+                localStorage.setItem('fairdraw_receipt_v5', colorKey);
                 confetti({ particleCount: 200, spread: 150, origin: { y: 0.6 } });
             } else {
                 showToast("Connection Error or Taken.", "error");
             }
-
             const finalSnap = await get(dbRef);
             render(finalSnap.val());
-            
-        }, 3000); // 3 Seconds
+        }, 3000);
     }
 
-    // Admin
-    window.adminMenu = () => {
+    window.openAdmin = async () => {
         const pass = prompt("🔐 Enter Admin Password:");
         if(pass === "admin123") {
-            const action = prompt("Type '1' for STATS REPORT\nType '2' to RESET SYSTEM");
-            
-            if(action === "1") {
-                get(dbRef).then(snap => {
-                    const data = snap.val();
-                    let report = "📊 REPORT:\n\n";
-                    COLORS.forEach(c => {
-                        const val = data[c].val;
-                        const status = val === 0 ? "Pending" : `POSITION ${val}`;
-                        report += `${c}: ${status}\n`;
-                    });
-                    alert(report);
-                });
-            } else if (action === "2") {
-                if(confirm("⚠️ RESET ENTIRE SYSTEM?")) {
-                    set(dbRef, null);
-                    localStorage.clear();
-                    window.location.reload();
-                }
-            }
+            document.getElementById('admin-modal').classList.remove('hidden');
+            const snap = await get(dbRef);
+            updateAdminTable(snap.val());
         }
-    };
+    }
+    
+    window.closeAdmin = () => {
+        document.getElementById('admin-modal').classList.add('hidden');
+    }
+
+    window.updateAdminTable = (data) => {
+        const tbody = document.getElementById('admin-table-body');
+        tbody.innerHTML = '';
+        COLORS.forEach(color => {
+            const val = data[color].val;
+            const isAssigned = val !== 0;
+            const tr = document.createElement('tr');
+            tr.className = "border-b border-gray-700 bg-gray-800/50";
+            tr.innerHTML = `
+                <td class="px-4 py-3 font-medium text-white flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-${color} border border-gray-500"></div>
+                    ${color}
+                </td>
+                <td class="px-4 py-3 text-center">
+                    <span class="${isAssigned ? 'bg-green-900 text-green-300' : 'bg-yellow-900 text-yellow-300'} text-[10px] font-medium px-2 py-0.5 rounded border ${isAssigned ? 'border-green-700' : 'border-yellow-700'}">
+                        ${isAssigned ? 'ASSIGNED' : 'PENDING'}
+                    </span>
+                </td>
+                <td class="px-4 py-3 text-right font-bold text-white number-font text-lg">
+                    ${isAssigned ? val : '-'}
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    window.resetSystem = () => {
+        if(confirm("⚠️ WARNING: RESET ENTIRE SYSTEM?\nThis will clear all allocations.")) {
+            set(dbRef, null);
+            localStorage.clear();
+            window.location.reload();
+        }
+    }
 
     const showToast = (msg, type) => {
         const t = document.getElementById('toast-container');
